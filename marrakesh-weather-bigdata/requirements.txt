@@ -1,0 +1,5 @@
+meteostat
+pandas
+numpy
+kafka-python
+pyspark

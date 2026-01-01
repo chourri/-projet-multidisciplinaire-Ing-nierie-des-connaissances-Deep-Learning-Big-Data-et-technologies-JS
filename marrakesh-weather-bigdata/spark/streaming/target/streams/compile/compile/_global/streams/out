@@ -1,0 +1,8 @@
+[0m[[0m[31merror[0m] [0m[0m/Users/chaimaehr/projects/kafka/projet_multidisciplaire/marrakesh-weather-bigdata/spark/streaming/src/main/scala/MarrakeshBatchProcessor.scala:34:15: overloaded method value from_json with alternatives:[0m
+[0m[[0m[31merror[0m] [0m[0m  (e: org.apache.spark.sql.Column,schema: org.apache.spark.sql.Column)org.apache.spark.sql.Column <and>[0m
+[0m[[0m[31merror[0m] [0m[0m  (e: org.apache.spark.sql.Column,schema: org.apache.spark.sql.types.DataType)org.apache.spark.sql.Column <and>[0m
+[0m[[0m[31merror[0m] [0m[0m  (e: org.apache.spark.sql.Column,schema: org.apache.spark.sql.types.StructType)org.apache.spark.sql.Column[0m
+[0m[[0m[31merror[0m] [0m[0m cannot be applied to (org.apache.spark.sql.Column, String)[0m
+[0m[[0m[31merror[0m] [0m[0m      .select(from_json(col("value"), schema).as("data"))[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

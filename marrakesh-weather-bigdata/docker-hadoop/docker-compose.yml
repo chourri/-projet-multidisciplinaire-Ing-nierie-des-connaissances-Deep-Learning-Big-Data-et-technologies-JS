@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  hadoop:
+    image: bde2020/hadoop-docker:2.0.0-hadoop3.2.1-java11
+    container_name: hadoop-cluster
+    ports:
+      - "9870:9870"  # NameNode UI
+      - "9000:9000"  # HDFS Namenode port
+    environment:
+      - HDFS_CONF_dfs_replication=1
+      - HDFS_CONF_dfs_permissions_enabled=false
+    volumes:
+      - ./data:/data
+    command: bash -c "service ssh start && /etc/bootstrap.sh -d"
