@@ -1,0 +1,27 @@
+<div class="bg-white border border-slate-200 rounded-sm shadow-sm" 
+     (mouseenter)="stopAutoSlide()" 
+     (mouseleave)="startAutoSlide()"
+     >
+  
+  <div class="bg-slate-100 p-3 border-b border-slate-200 font-bold text-sm text-sky-900 flex justify-between items-center">
+    <span>SATELLITE IMAGERY & ANALYSIS MAPS</span>
+    
+    <div class="flex gap-1">
+      <button (click)="prev()" class="px-2 py-1 bg-white border border-slate-300 hover:bg-slate-50 text-xs rounded text-slate-600">◀</button>
+      <button (click)="next()" class="px-2 py-1 bg-white border border-slate-300 hover:bg-slate-50 text-xs rounded text-slate-600">▶</button>
+    </div>
+  </div>
+
+  <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+    @for (img of visibleImages(); track img.title) {
+      <div class="group relative cursor-pointer overflow-hidden rounded border border-slate-100 shadow-sm hover:shadow-md transition">
+        <img [src]="img.url" [alt]="img.title" class="w-full h-40 object-cover transform group-hover:scale-105 transition duration-500">
+        
+        <div class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent p-3 pt-8">
+          <h5 class="text-white text-xs font-bold truncate">{{ img.title }}</h5>
+          <p class="text-slate-300 text-[10px]">{{ img.date }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>
