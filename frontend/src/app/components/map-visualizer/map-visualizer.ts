@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild, Input, effect, input } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, effect, input } from '@angular/core';
 import * as L from 'leaflet';
 import { MeteoData } from '../../models/weather.interface';
 
@@ -9,19 +9,22 @@ import { MeteoData } from '../../models/weather.interface';
 })
 export class MapVisualizerComponent implements OnInit {
   @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef;
-  
-  // Input Signal (Angular 17+)
   weatherData = input<MeteoData[]>([]);
 
   private map!: L.Map;
+
+  // DEMO LOCATIONS: We map specific risks to specific cities for the demo
+  private readonly LOCATIONS: Record<string, [number, number]> = {
+    'BENI_MELLAL': [32.33725, -6.34983], // Hot Zone
+    'TANGIER': [35.7595, -5.8340],       // Windy Zone
+    'KHOURIBGA': [32.8807, -6.9063]      // Default / HQ
+  };
 
   constructor() {
     // React to data changes
     effect(() => {
       const data = this.weatherData();
-      if (this.map && data.length > 0) {
-        this.updateMarkers(data);
-      }
+      if (this.map && data.length > 0) this.updateMarkers(data);
     });
   }
 
@@ -30,45 +33,73 @@ export class MapVisualizerComponent implements OnInit {
   }
 
   private initMap(): void {
-    // Center on Morocco [Lat, Lng]
-    this.map = L.map(this.mapContainer.nativeElement).setView([31.7917, -7.0926], 5);
+    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    });
 
-    // Free OpenStreetMap Tiles (GDACS uses similar free layers)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(this.map);
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri'
+    });
+
+    this.map = L.map(this.mapContainer.nativeElement, {
+      center: [32.5, -6.0], // Zoomed out slightly to see both Tangier and Beni Mellal
+      zoom: 6,
+      layers: [streetLayer]
+    });
+
+    L.control.layers({ "Street": streetLayer, "Satellite": satelliteLayer }).addTo(this.map);
   }
 
   private updateMarkers(data: MeteoData[]): void {
-    // Clear existing markers (logic simplified for demo)
+    // 1. Clear existing markers
     this.map.eachLayer((layer) => {
-        if (layer instanceof L.Marker) {
-            this.map.removeLayer(layer);
-        }
+        if (layer instanceof L.CircleMarker) this.map.removeLayer(layer);
     });
 
-    data.forEach(day => {
-      if (day.alert) {
-        // We simulate a location for the alert since your data doesn't have Lat/Lng yet.
-        // In real app, MeteoData should have coordinates.
-        // For now, we plot them around Marrakesh/Casablanca randomly for demo.
-        const lat = 31.62 + (Math.random() * 2 - 1); 
-        const lng = -7.98 + (Math.random() * 2 - 1);
+    // 2. FIND ALL ALERTS (Not just the worst one)
+    // This allows us to show a Heatwave in Beni Mellal AND a Storm in Tangier simultaneously if data permits
+    const activeAlerts = data.filter(d => d.alert !== null);
 
-        const color = day.alert.level === 'CRITICAL' ? 'red' : 'orange';
+    if (activeAlerts.length === 0) return;
+
+    // 3. PLOT MARKERS BASED ON TYPE
+    activeAlerts.forEach(day => {
+        if (!day.alert) return;
+
+        let coords = this.LOCATIONS['KHOURIBGA']; // Default
+        let locationName = "Khouribga";
+
+        // LOGIC: Map Disaster Type -> Location
+        if (day.alert.type.includes('HEAT') || day.alert.type.includes('DRY')) {
+            coords = this.LOCATIONS['BENI_MELLAL'];
+            locationName = "Beni Mellal";
+        } else if (day.alert.type.includes('WIND') || day.alert.type.includes('STORM')) {
+            coords = this.LOCATIONS['TANGIER'];
+            locationName = "Tangier";
+        }
+
+        const color = day.alert.level === 'CRITICAL' ? '#ef4444' : '#f97316';
+
+        // Check if a marker already exists at these coords to avoid stacking (optional optimization)
+        // For simplicity, we just plot it.
         
-        // Custom Circle Marker
-        L.circleMarker([lat, lng], {
-          radius: 10,
-          fillColor: color,
-          color: '#fff',
-          weight: 1,
-          opacity: 1,
-          fillOpacity: 0.8
+        L.circleMarker(coords, {
+            radius: 14,
+            fillColor: color,
+            color: '#fff',
+            weight: 3,
+            opacity: 1,
+            fillOpacity: 0.9
         })
-        .bindPopup(`<b>${day.alert.type}</b><br>${day.date}<br>${day.alert.message}`)
+        .bindPopup(`
+            <div style="text-align:center">
+            <strong style="color:${color}">${day.alert.type}</strong><br>
+            <span style="font-size:11px; color:#666">${locationName} Station</span><br>
+            <b>${day.date}</b><br>
+            ${day.alert.message}
+            </div>
+        `)
         .addTo(this.map);
-      }
     });
   }
 }

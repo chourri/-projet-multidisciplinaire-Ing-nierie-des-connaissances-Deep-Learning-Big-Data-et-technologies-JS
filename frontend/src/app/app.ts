@@ -4,8 +4,9 @@ import { DashboardComponent } from './dashboard/dashboard';
 
 @Component({
   selector: 'app-root',
-  imports: [DashboardComponent],
-  template: `<app-dashboard></app-dashboard>`
+  standalone: true,
+  imports: [RouterOutlet], // RouterOutlet must be imported here
+  template: `<router-outlet></router-outlet>`
 })
 export class App {
   protected readonly title = signal('frontend');
