@@ -7,6 +7,8 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
+from sklearn.metrics import mean_squared_error, mean_absolute_error, recall_score, precision_score
+import json
 
 # =============================
 # 1. Charger le fichier Excel
@@ -73,8 +75,7 @@ y = np.array(y)
 # 8. Modèle LSTM
 # =============================
 model = Sequential([
-    LSTM(64, return_sequences=True,
-         input_shape=(sequence_length, len(features_all))),
+    LSTM(64, return_sequences=True, input_shape=(sequence_length, len(features_all))),
     Dropout(0.2),
     LSTM(32),
     Dense(len(features))
@@ -133,12 +134,47 @@ pred_full = np.hstack([predictions_scaled, pad])
 predictions = scaler.inverse_transform(pred_full)[:, :len(features)]
 
 # =============================
-# 12. Sauvegarde
+# 12. Sauvegarde des prédictions en JSON
 # =============================
 df_2026 = pd.DataFrame(predictions, columns=features)
 df_2026.insert(0, 'date', future_dates)
 
-# Sauvegarde en JSON lisible
 df_2026.to_json("weather_2026_predicted.json", orient='records', date_format='iso', force_ascii=False)
+print("Prédictions 2026 réalistes générées en JSON")
 
-print("✅ Prédictions 2026 réalistes générées en JSON")
+# =============================
+# 13. Évaluation des performances avec tableaux
+# =============================
+X_test = X[-30:]
+y_test = y[-30:]
+
+y_pred_scaled = model.predict(X_test, verbose=0)
+pad_test = np.zeros((len(y_pred_scaled), 2))
+y_pred_full = np.hstack([y_pred_scaled, pad_test])
+y_pred = scaler.inverse_transform(y_pred_full)[:, :len(features)]
+
+# 13.1 Tableau erreurs globales
+errors_list = []
+for i, feat in enumerate(features):
+    mse = mean_squared_error(y_test[:, i], y_pred[:, i])
+    mae = mean_absolute_error(y_test[:, i], y_pred[:, i])
+    rmse = np.sqrt(mse)
+    errors_list.append([feat, mse, rmse, mae])
+
+df_errors = pd.DataFrame(errors_list, columns=['Feature', 'MSE', 'RMSE', 'MAE'])
+print("\nErreurs globales :\n", df_errors)
+
+# 13.2 Tableau détection des extrêmes
+extreme_thresholds = {'tmax': 35, 'tmin': 0, 'prcp': 20}
+extremes_list = []
+
+for feat, thresh in extreme_thresholds.items():
+    idx = features.index(feat)
+    y_true_extreme = (y_test[:, idx] >= thresh).astype(int)
+    y_pred_extreme = (y_pred[:, idx] >= thresh).astype(int)
+    recall = recall_score(y_true_extreme, y_pred_extreme, zero_division=0)
+    precision = precision_score(y_true_extreme, y_pred_extreme, zero_division=0)
+    extremes_list.append([feat, thresh, recall, precision])
+
+df_extremes = pd.DataFrame(extremes_list, columns=['Feature', 'Threshold', 'Recall', 'Precision'])
+print("\nPerformances sur extrêmes :\n", df_extremes)
