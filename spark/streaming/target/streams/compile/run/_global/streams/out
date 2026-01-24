@@ -1,0 +1,148 @@
+[0m[[0m[31merror[0m] [0m[0morg.apache.spark.sql.streaming.StreamingQueryException: Partition weather-marrakesh-0's offset was changed from 10169 to 786, some data may have been missed. [0m
+[0m[[0m[31merror[0m] [0m[0mSome data may have been lost because they are not available in Kafka any more; either the[0m
+[0m[[0m[31merror[0m] [0m[0m data was aged out by Kafka or the topic may have been deleted before all the data in the[0m
+[0m[[0m[31merror[0m] [0m[0m topic was processed. If you don't want your streaming query to fail on such cases, set the[0m
+[0m[[0m[31merror[0m] [0m[0m source option "failOnDataLoss" to "false".[0m
+[0m[[0m[31merror[0m] [0m[0m    [0m
+[0m[[0m[31merror[0m] [0m[0m=== Streaming Query ===[0m
+[0m[[0m[31merror[0m] [0m[0mIdentifier: [id = ff68ca41-567c-4882-9bab-d3fdb2c7d950, runId = f3749a52-80ac-46ca-bf61-aeb6de6d1f25][0m
+[0m[[0m[31merror[0m] [0m[0mCurrent Committed Offsets: {KafkaV2[Subscribe[weather-marrakesh]]: {"weather-marrakesh":{"0":10169}}}[0m
+[0m[[0m[31merror[0m] [0m[0mCurrent Available Offsets: {KafkaV2[Subscribe[weather-marrakesh]]: {"weather-marrakesh":{"0":786}}}[0m
+[0m[[0m[31merror[0m] [0m[0m[0m
+[0m[[0m[31merror[0m] [0m[0mCurrent State: ACTIVE[0m
+[0m[[0m[31merror[0m] [0m[0mThread State: RUNNABLE[0m
+[0m[[0m[31merror[0m] [0m[0m[0m
+[0m[[0m[31merror[0m] [0m[0mLogical Plan:[0m
+[0m[[0m[31merror[0m] [0m[0mWriteToMicroBatchDataSourceV1 FileSink[/Users/chaimaehr/projects/marrakesh-weather-bigdata/hdfs-simulated/weather], ff68ca41-567c-4882-9bab-d3fdb2c7d950, [path=/Users/chaimaehr/projects/marrakesh-weather-bigdata/hdfs-simulated/weather, checkpointLocation=/Users/chaimaehr/projects/marrakesh-weather-bigdata/hdfs-simulated/checkpoint], Append[0m
+[0m[[0m[31merror[0m] [0m[0m+- Project [data#23.date AS date#25, data#23.tavg AS tavg#26, data#23.tmin AS tmin#27, data#23.tmax AS tmax#28, data#23.prcp AS prcp#29][0m
+[0m[[0m[31merror[0m] [0m[0m   +- Project [from_json(StructField(date,StringType,true), StructField(tavg,DoubleType,true), StructField(tmin,DoubleType,true), StructField(tmax,DoubleType,true), StructField(prcp,DoubleType,true), value#21, Some(Africa/Casablanca)) AS data#23][0m
+[0m[[0m[31merror[0m] [0m[0m      +- Project [cast(value#8 as string) AS value#21][0m
+[0m[[0m[31merror[0m] [0m[0m         +- StreamingDataSourceV2Relation [key#7, value#8, topic#9, partition#10, offset#11L, timestamp#12, timestampType#13], org.apache.spark.sql.kafka010.KafkaSourceProvider$KafkaScan@53d7fd74, KafkaV2[Subscribe[weather-marrakesh]][0m
+[0m[[0m[31merror[0m] [0m[0m[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.StreamExecution.org$apache$spark$sql$execution$streaming$StreamExecution$$runStream(StreamExecution.scala:332)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.StreamExecution$$anon$1.$anonfun$run$1(StreamExecution.scala:211)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:94)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.StreamExecution$$anon$1.run(StreamExecution.scala:211)[0m
+[0m[[0m[31merror[0m] [0m[0mCaused by: java.lang.IllegalStateException: Partition weather-marrakesh-0's offset was changed from 10169 to 786, some data may have been missed. [0m
+[0m[[0m[31merror[0m] [0m[0mSome data may have been lost because they are not available in Kafka any more; either the[0m
+[0m[[0m[31merror[0m] [0m[0m data was aged out by Kafka or the topic may have been deleted before all the data in the[0m
+[0m[[0m[31merror[0m] [0m[0m topic was processed. If you don't want your streaming query to fail on such cases, set the[0m
+[0m[[0m[31merror[0m] [0m[0m source option "failOnDataLoss" to "false".[0m
+[0m[[0m[31merror[0m] [0m[0m    [0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.kafka010.KafkaMicroBatchStream.reportDataLoss(KafkaMicroBatchStream.scala:309)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.kafka010.KafkaMicroBatchStream.$anonfun$planInputPartitions$1(KafkaMicroBatchStream.scala:201)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.kafka010.KafkaMicroBatchStream.$anonfun$planInputPartitions$1$adapted(KafkaMicroBatchStream.scala:201)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.kafka010.KafkaOffsetReaderAdmin.$anonfun$getOffsetRangesFromResolvedOffsets$6(KafkaOffsetReaderAdmin.scala:487)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator.foreach(Iterator.scala:943)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator.foreach$(Iterator.scala:943)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.IterableLike.foreach(IterableLike.scala:74)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableLike.map(TraversableLike.scala:286)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableLike.map$(TraversableLike.scala:279)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.AbstractTraversable.map(Traversable.scala:108)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.kafka010.KafkaOffsetReaderAdmin.getOffsetRangesFromResolvedOffsets(KafkaOffsetReaderAdmin.scala:482)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.kafka010.KafkaMicroBatchStream.planInputPartitions(KafkaMicroBatchStream.scala:201)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.datasources.v2.MicroBatchScanExec.inputPartitions$lzycompute(MicroBatchScanExec.scala:46)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.datasources.v2.MicroBatchScanExec.inputPartitions(MicroBatchScanExec.scala:46)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.datasources.v2.DataSourceV2ScanExecBase.supportsColumnar(DataSourceV2ScanExecBase.scala:179)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.datasources.v2.DataSourceV2ScanExecBase.supportsColumnar$(DataSourceV2ScanExecBase.scala:175)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.datasources.v2.MicroBatchScanExec.supportsColumnar(MicroBatchScanExec.scala:29)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.datasources.v2.DataSourceV2Strategy.apply(DataSourceV2Strategy.scala:157)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.catalyst.planning.QueryPlanner.$anonfun$plan$1(QueryPlanner.scala:63)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator$$anon$11.nextCur(Iterator.scala:486)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator$$anon$11.hasNext(Iterator.scala:492)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator$$anon$11.hasNext(Iterator.scala:491)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.catalyst.planning.QueryPlanner.plan(QueryPlanner.scala:93)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.SparkStrategies.plan(SparkStrategies.scala:70)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.catalyst.planning.QueryPlanner.$anonfun$plan$3(QueryPlanner.scala:78)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableOnce$folder$1.apply(TraversableOnce.scala:196)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableOnce$folder$1.apply(TraversableOnce.scala:194)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator.foreach(Iterator.scala:943)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator.foreach$(Iterator.scala:943)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableOnce.foldLeft(TraversableOnce.scala:199)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableOnce.foldLeft$(TraversableOnce.scala:192)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.AbstractIterator.foldLeft(Iterator.scala:1431)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.catalyst.planning.QueryPlanner.$anonfun$plan$2(QueryPlanner.scala:75)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator$$anon$11.nextCur(Iterator.scala:486)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator$$anon$11.hasNext(Iterator.scala:492)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.catalyst.planning.QueryPlanner.plan(QueryPlanner.scala:93)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.SparkStrategies.plan(SparkStrategies.scala:70)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.catalyst.planning.QueryPlanner.$anonfun$plan$3(QueryPlanner.scala:78)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableOnce$folder$1.apply(TraversableOnce.scala:196)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableOnce$folder$1.apply(TraversableOnce.scala:194)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator.foreach(Iterator.scala:943)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator.foreach$(Iterator.scala:943)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableOnce.foldLeft(TraversableOnce.scala:199)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.TraversableOnce.foldLeft$(TraversableOnce.scala:192)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.AbstractIterator.foldLeft(Iterator.scala:1431)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.catalyst.planning.QueryPlanner.$anonfun$plan$2(QueryPlanner.scala:75)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator$$anon$11.nextCur(Iterator.scala:486)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.collection.Iterator$$anon$11.hasNext(Iterator.scala:492)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.catalyst.planning.QueryPlanner.plan(QueryPlanner.scala:93)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.SparkStrategies.plan(SparkStrategies.scala:70)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution$.createSparkPlan(QueryExecution.scala:496)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.$anonfun$sparkPlan$1(QueryExecution.scala:171)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.catalyst.QueryPlanningTracker.measurePhase(QueryPlanningTracker.scala:138)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$2(QueryExecution.scala:219)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:546)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$1(QueryExecution.scala:219)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:900)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.executePhase(QueryExecution.scala:218)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.sparkPlan$lzycompute(QueryExecution.scala:171)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.sparkPlan(QueryExecution.scala:164)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executedPlan$1(QueryExecution.scala:186)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.catalyst.QueryPlanningTracker.measurePhase(QueryPlanningTracker.scala:138)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$2(QueryExecution.scala:219)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:546)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$1(QueryExecution.scala:219)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:900)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.executePhase(QueryExecution.scala:218)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.executedPlan$lzycompute(QueryExecution.scala:186)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.QueryExecution.executedPlan(QueryExecution.scala:179)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.$anonfun$runBatch$15(MicroBatchExecution.scala:720)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.ProgressReporter.reportTimeTaken(ProgressReporter.scala:427)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.ProgressReporter.reportTimeTaken$(ProgressReporter.scala:425)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.StreamExecution.reportTimeTaken(StreamExecution.scala:67)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.runBatch(MicroBatchExecution.scala:708)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.$anonfun$runActivatedStream$2(MicroBatchExecution.scala:286)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.ProgressReporter.reportTimeTaken(ProgressReporter.scala:427)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.ProgressReporter.reportTimeTaken$(ProgressReporter.scala:425)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.StreamExecution.reportTimeTaken(StreamExecution.scala:67)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.$anonfun$runActivatedStream$1(MicroBatchExecution.scala:249)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.ProcessingTimeExecutor.execute(TriggerExecutor.scala:67)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.runActivatedStream(MicroBatchExecution.scala:239)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.StreamExecution.$anonfun$runStream$1(StreamExecution.scala:311)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:900)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.StreamExecution.org$apache$spark$sql$execution$streaming$StreamExecution$$runStream(StreamExecution.scala:289)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.StreamExecution$$anon$1.$anonfun$run$1(StreamExecution.scala:211)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:94)[0m
+[0m[[0m[31merror[0m] [0m[0m	at org.apache.spark.sql.execution.streaming.StreamExecution$$anon$1.run(StreamExecution.scala:211)[0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) org.apache.spark.sql.streaming.StreamingQueryException: Partition weather-marrakesh-0's offset was changed from 10169 to 786, some data may have been missed. [0m
+[0m[[0m[31merror[0m] [0m[0mSome data may have been lost because they are not available in Kafka any more; either the[0m
+[0m[[0m[31merror[0m] [0m[0m data was aged out by Kafka or the topic may have been deleted before all the data in the[0m
+[0m[[0m[31merror[0m] [0m[0m topic was processed. If you don't want your streaming query to fail on such cases, set the[0m
+[0m[[0m[31merror[0m] [0m[0m source option "failOnDataLoss" to "false".[0m
+[0m[[0m[31merror[0m] [0m[0m    [0m
+[0m[[0m[31merror[0m] [0m[0m=== Streaming Query ===[0m
+[0m[[0m[31merror[0m] [0m[0mIdentifier: [id = ff68ca41-567c-4882-9bab-d3fdb2c7d950, runId = f3749a52-80ac-46ca-bf61-aeb6de6d1f25][0m
+[0m[[0m[31merror[0m] [0m[0mCurrent Committed Offsets: {KafkaV2[Subscribe[weather-marrakesh]]: {"weather-marrakesh":{"0":10169}}}[0m
+[0m[[0m[31merror[0m] [0m[0mCurrent Available Offsets: {KafkaV2[Subscribe[weather-marrakesh]]: {"weather-marrakesh":{"0":786}}}[0m
+[0m[[0m[31merror[0m] [0m[0m[0m
+[0m[[0m[31merror[0m] [0m[0mCurrent State: ACTIVE[0m
+[0m[[0m[31merror[0m] [0m[0mThread State: RUNNABLE[0m
+[0m[[0m[31merror[0m] [0m[0m[0m
+[0m[[0m[31merror[0m] [0m[0mLogical Plan:[0m
+[0m[[0m[31merror[0m] [0m[0mWriteToMicroBatchDataSourceV1 FileSink[/Users/chaimaehr/projects/marrakesh-weather-bigdata/hdfs-simulated/weather], ff68ca41-567c-4882-9bab-d3fdb2c7d950, [path=/Users/chaimaehr/projects/marrakesh-weather-bigdata/hdfs-simulated/weather, checkpointLocation=/Users/chaimaehr/projects/marrakesh-weather-bigdata/hdfs-simulated/checkpoint], Append[0m
+[0m[[0m[31merror[0m] [0m[0m+- Project [data#23.date AS date#25, data#23.tavg AS tavg#26, data#23.tmin AS tmin#27, data#23.tmax AS tmax#28, data#23.prcp AS prcp#29][0m
+[0m[[0m[31merror[0m] [0m[0m   +- Project [from_json(StructField(date,StringType,true), StructField(tavg,DoubleType,true), StructField(tmin,DoubleType,true), StructField(tmax,DoubleType,true), StructField(prcp,DoubleType,true), value#21, Some(Africa/Casablanca)) AS data#23][0m
+[0m[[0m[31merror[0m] [0m[0m      +- Project [cast(value#8 as string) AS value#21][0m
+[0m[[0m[31merror[0m] [0m[0m         +- StreamingDataSourceV2Relation [key#7, value#8, topic#9, partition#10, offset#11L, timestamp#12, timestampType#13], org.apache.spark.sql.kafka010.KafkaSourceProvider$KafkaScan@53d7fd74, KafkaV2[Subscribe[weather-marrakesh]][0m

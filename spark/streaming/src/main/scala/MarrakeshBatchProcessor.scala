@@ -1,48 +1,40 @@
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, from_json
+from pyspark.sql.types import *
 
-object MarrakeshStreamProcessor {
+# Spark session
+spark = SparkSession.builder \
+    .appName("KafkaBatchConsumerLocal") \
+    .getOrCreate()
 
-  def main(args: Array[String]): Unit = {
+# Read Kafka in BATCH mode
+df = spark.read \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", "localhost:9092") \
+    .option("subscribe", "weather-marrakesh") \
+    .option("startingOffsets", "earliest") \
+    .load()
 
-    val spark = SparkSession.builder()
-      .appName("Marrakesh Weather Streaming")
-      .master("local[*]")
-      .getOrCreate()
+# Convert Kafka value to string
+df = df.selectExpr("CAST(value AS STRING) as json")
 
-    spark.sparkContext.setLogLevel("WARN")
+# Define schema of Meteostat JSON
+schema = StructType([
+    StructField("time", StringType()),
+    StructField("tavg", DoubleType()),
+    StructField("tmin", DoubleType()),
+    StructField("tmax", DoubleType()),
+    StructField("prcp", DoubleType()),
+    StructField("wspd", DoubleType()),
+])
 
-    // Read Kafka stream
-    val kafkaDF = spark.readStream
-      .format("kafka")
-      .option("kafka.bootstrap.servers", "localhost:9092")
-      .option("subscribe", "weather-marrakesh")
-      .option("startingOffsets", "earliest")
-      .load()
+# Parse JSON
+df = df.select(from_json(col("json"), schema).alias("data")).select("data.*")
 
-    // Define schema
-    val schema = new StructType()
-        .add("date", StringType)
-        .add("tavg", DoubleType)
-        .add("tmin", DoubleType)
-        .add("tmax", DoubleType)
-        .add("prcp", DoubleType)
+# Save locally as Parquet Data Lake
+df.write.mode("overwrite").parquet("data_lake/weather_raw_parquet")
 
-    // Convert Kafka value to structured data
-    val weatherDF = kafkaDF
-      .selectExpr("CAST(value AS STRING)")
-      .select(from_json(col("value"), schema).as("data"))
-      .select("data.*")
+# Optional CSV export
+df.toPandas().to_csv("data_lake/weather_raw.csv", index=False)
 
-    // Write streaming data to local folder as Parquet (simulated HDFS)
-    val query = weatherDF.writeStream
-      .outputMode("append")
-      .format("parquet")
-      .option("path", "/Users/chaimaehr/projects/marrakesh-weather-bigdata/hdfs-simulated/weather")
-      .option("checkpointLocation", "/Users/chaimaehr/projects/marrakesh-weather-bigdata/hdfs-simulated/checkpoint")
-      .start()
-
-    query.awaitTermination()
-  }
-}
+print("✅ Data saved locally in Parquet + CSV")
