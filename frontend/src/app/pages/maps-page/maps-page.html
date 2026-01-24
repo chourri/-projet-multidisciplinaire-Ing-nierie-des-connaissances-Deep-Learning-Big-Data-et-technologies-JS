@@ -1,0 +1,147 @@
+<app-header></app-header>
+
+<div class="min-h-screen bg-[#f8f9fa] text-slate-800 font-sans pb-24">
+  
+  <div class="container mx-auto max-w-7xl px-6 pt-16">
+
+    <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-slate-300 pb-6">
+      <div>
+        <h1 class="text-4xl font-serif font-bold text-slate-900 mb-4 leading-tight">
+          Satellite Data Archive <br>
+          <span class="text-sky-900">Remote Sensing Repository</span>
+        </h1>
+        <div class="prose prose-sm text-slate-600 max-w-2xl leading-relaxed">
+          <p>
+            Digital archive of Earth Observation (EO) data ingested for the CEEPS project. 
+            Contains raw and processed imagery from Sentinel, Landsat, and MODIS constellations.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-4 md:mt-0 text-right">
+        <div class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Archive Status</div>
+        <div class="font-mono text-xs text-slate-900 font-bold bg-white border border-slate-400 px-3 py-1 inline-block shadow-sm">
+          SYSTEM ACTIVE • 06 RECORDS
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 bg-slate-200 border border-slate-300 p-1 shadow-sm">
+      
+      @for (img of galleryImages; track img.id) {
+        
+        <div 
+          class="group relative aspect-[4/3] bg-slate-100 cursor-zoom-in overflow-hidden"
+          (click)="openLightbox(img)"
+        >
+          <img 
+            [src]="img.url" 
+            [alt]="img.title" 
+            class="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105 filter saturate-[0.8] group-hover:saturate-100"
+          >
+
+          <div class="absolute top-0 left-0 bg-white/95 px-3 py-1 border-r border-b border-slate-300 z-10">
+            <span class="font-mono text-[10px] font-bold text-slate-900">{{ img.code || 'IMG-00' + img.id }}</span>
+          </div>
+
+          <div class="absolute inset-0 bg-slate-900/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+            
+            <div class="mb-2">
+               <span class="inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white border border-white/30"
+                [ngClass]="{
+                  'bg-blue-900/50': img.type === 'Satellite',
+                  'bg-red-900/50': img.type === 'Disaster',
+                  'bg-slate-700/50': img.type === 'Analysis'
+                }">
+                {{ img.type }}
+               </span>
+            </div>
+
+            <h3 class="font-serif text-white text-lg leading-tight mb-2">{{ img.title }}</h3>
+            
+            <div class="flex items-center gap-4 text-[10px] text-slate-300 font-mono uppercase tracking-wide border-t border-white/20 pt-2">
+              <span>{{ img.date }}</span>
+              <span>//</span>
+              <span>{{ img.source }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <div class="mt-8 flex justify-between items-center text-[10px] text-slate-400 font-mono uppercase border-t border-slate-200 pt-4">
+      <span>Classification: UNCLASSIFIED / PUBLIC</span>
+      <span>CEEPS v1.0 // USMS-ENSA</span>
+    </div>
+
+  </div>
+</div>
+
+@if (selectedImage(); as activeImg) {
+  <div class="fixed inset-0 z-[100] bg-slate-100/95 backdrop-blur-md flex flex-col animate-fade-in" (click)="closeLightbox()">
+    
+    <div class="w-full bg-white border-b border-slate-300 px-8 py-5 flex justify-between items-center shadow-sm z-50">
+      <div>
+        <h2 class="font-serif font-bold text-slate-900 text-xl tracking-tight">{{ activeImg.title }}</h2>
+        <p class="font-mono text-xs text-slate-500 mt-1 uppercase tracking-wide">
+          REF_ID: <span class="text-slate-900 font-bold">{{ activeImg.code || 'IMG-00' + activeImg.id }}</span>
+        </p>
+      </div>
+      
+      <button 
+        (click)="closeLightbox()" 
+        class="group flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-red-700 transition-colors border border-slate-300 hover:border-red-300 px-4 py-2 bg-slate-50"
+      >
+        <span>Close Viewer</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-auto flex items-center justify-center p-8 bg-[#e5e7eb] relative">
+      <div class="absolute inset-0 opacity-[0.05]" style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;"></div>
+      
+      <img 
+        [src]="activeImg.url" 
+        class="max-w-full max-h-[75vh] object-contain shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] border border-slate-400 bg-white relative z-10"
+        (click)="$event.stopPropagation()" 
+      >
+    </div>
+
+    <div class="bg-white border-t border-slate-300 px-8 py-6 z-50" (click)="$event.stopPropagation()">
+      <div class="container mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-4 gap-8">
+        
+        <div class="border-l-2 border-slate-200 pl-4">
+          <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Acquisition Date</span>
+          <span class="font-mono text-sm text-slate-800">{{ activeImg.date }}</span>
+        </div>
+
+        <div class="border-l-2 border-slate-200 pl-4">
+          <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sensor Source</span>
+          <span class="font-mono text-sm text-slate-800">{{ activeImg.source }}</span>
+        </div>
+
+        <div class="border-l-2 border-slate-200 pl-4">
+          <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Event Type</span>
+          <span class="text-sm font-bold uppercase tracking-wide" 
+            [ngClass]="{
+              'text-blue-800': activeImg.type === 'Satellite',
+              'text-red-800': activeImg.type === 'Disaster',
+              'text-slate-800': activeImg.type === 'Analysis'
+            }">
+            {{ activeImg.type }}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-end">
+           <button class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest transition flex items-center gap-2 shadow-sm">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+             Download Raw Data
+           </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+}
