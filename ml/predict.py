@@ -7,13 +7,18 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
-from sklearn.metrics import mean_squared_error, mean_absolute_error, recall_score, precision_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import json
+import os
 
 # =============================
 # 1. Charger le fichier Excel
 # =============================
+# Assurez-vous d'avoir uploadé "bm(21-25).xlsx" dans Colab
 df = pd.read_excel("bm(21-25).xlsx")
+print("✅ Fichier chargé :", df.shape)
+print(df.head())
 
 # =============================
 # 2. Nettoyage date
@@ -44,7 +49,7 @@ if len(df) < 100:
     raise ValueError("❌ Pas assez de données après nettoyage")
 
 # =============================
-# 5. Saisonnalité (clé)
+# 5. Saisonnalité
 # =============================
 df['dayofyear'] = df['date'].dt.dayofyear
 df['sin_doy'] = np.sin(2 * np.pi * df['dayofyear'] / 365)
@@ -127,7 +132,7 @@ for date in future_dates:
     last_sequence = np.vstack([last_sequence[1:], next_full])
 
 # =============================
-# 11. Dénormalisation CORRECTE
+# 11. Dénormalisation
 # =============================
 pad = np.zeros((len(predictions_scaled), 2))
 pred_full = np.hstack([predictions_scaled, pad])
@@ -140,31 +145,43 @@ df_2026 = pd.DataFrame(predictions, columns=features)
 df_2026.insert(0, 'date', future_dates)
 
 df_2026.to_json("weather_2026_predicted.json", orient='records', date_format='iso', force_ascii=False)
-print("Prédictions 2026 réalistes générées en JSON")
+print("✅ Prédictions 2026 générées en JSON")
 
 # =============================
-# 13. Évaluation des performances avec tableaux
+# 13. Évaluation des performances
 # =============================
-X_test = X[-30:]
-y_test = y[-30:]
+# Test set = dernière année (ou max 365 points)
+test_size = min(365, len(X))
+X_test = X[-test_size:]
+y_test = y[-test_size:]
 
 y_pred_scaled = model.predict(X_test, verbose=0)
 pad_test = np.zeros((len(y_pred_scaled), 2))
 y_pred_full = np.hstack([y_pred_scaled, pad_test])
 y_pred = scaler.inverse_transform(y_pred_full)[:, :len(features)]
 
-# 13.1 Tableau erreurs globales
+# =============================
+# 13.1 Erreurs globales corrigées
+# =============================
 errors_list = []
 for i, feat in enumerate(features):
-    mse = mean_squared_error(y_test[:, i], y_pred[:, i])
-    mae = mean_absolute_error(y_test[:, i], y_pred[:, i])
+    y_true = y_test[:, i]
+    y_pred_feat = y_pred[:, i]
+
+    mse = mean_squared_error(y_true, y_pred_feat)
+    mae = mean_absolute_error(y_true, y_pred_feat)
     rmse = np.sqrt(mse)
-    errors_list.append([feat, mse, rmse, mae])
+    # MAPE stable avec np.maximum(y_true, 1)
+    mape = np.mean(np.abs((y_true - y_pred_feat) / np.maximum(y_true, 1))) * 100
 
-df_errors = pd.DataFrame(errors_list, columns=['Feature', 'MSE', 'RMSE', 'MAE'])
-print("\nErreurs globales :\n", df_errors)
+    errors_list.append([feat, mse, rmse, mae, mape])
 
-# 13.2 Tableau détection des extrêmes
+df_errors = pd.DataFrame(errors_list, columns=['Feature', 'MSE', 'RMSE', 'MAE', 'MAPE'])
+print("\n📊 Erreurs globales corrigées :\n", df_errors)
+
+# -----------------------------
+# 13.2 Performances sur extrêmes
+# -----------------------------
 extreme_thresholds = {'tmax': 35, 'tmin': 0, 'prcp': 20}
 extremes_list = []
 
@@ -172,9 +189,19 @@ for feat, thresh in extreme_thresholds.items():
     idx = features.index(feat)
     y_true_extreme = (y_test[:, idx] >= thresh).astype(int)
     y_pred_extreme = (y_pred[:, idx] >= thresh).astype(int)
-    recall = recall_score(y_true_extreme, y_pred_extreme, zero_division=0)
-    precision = precision_score(y_true_extreme, y_pred_extreme, zero_division=0)
-    extremes_list.append([feat, thresh, recall, precision])
 
-df_extremes = pd.DataFrame(extremes_list, columns=['Feature', 'Threshold', 'Recall', 'Precision'])
-print("\nPerformances sur extrêmes :\n", df_extremes)
+    # Si pas d'exemple positif, éviter division par 0
+    if y_true_extreme.sum() == 0:
+        recall = np.nan
+        precision = np.nan
+        f1 = np.nan
+    else:
+        recall = recall_score(y_true_extreme, y_pred_extreme, zero_division=0)
+        precision = precision_score(y_true_extreme, y_pred_extreme, zero_division=0)
+        f1 = f1_score(y_true_extreme, y_pred_extreme, zero_division=0)
+
+    accuracy = accuracy_score(y_true_extreme, y_pred_extreme)
+    extremes_list.append([feat, thresh, accuracy, recall, precision, f1])
+
+df_extremes = pd.DataFrame(extremes_list, columns=['Feature', 'Threshold', 'Accuracy', 'Recall', 'Precision', 'F1-score'])
+print("\n⚠️ Performances sur extrêmes :\n", df_extremes)
