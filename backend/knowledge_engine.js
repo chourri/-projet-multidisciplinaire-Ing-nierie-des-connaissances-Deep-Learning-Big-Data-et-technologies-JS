@@ -1,21 +1,24 @@
-// The "Ontology" is implicit in the object structures
 // The "Rules" are defined as constants
-
 const RULES = {
+    // Heat Rules
     TEMP_CRITICAL: 42.0,
     TEMP_HIGH: 38.0,
-    HUMIDITY_DANGER: 20.0
+    HUMIDITY_DANGER: 20.0,
+
+    // NEW: Wind Rules (km/h)
+    WIND_GALE: 60.0,    // Level: HIGH
+    WIND_STORM: 85.0    // Level: CRITICAL
 };
 
 class KnowledgeEngine {
 
     /**
      * Rule 1: Analyze a single day for immediate risk
-     * @param {Object} dayData - { tmax: number, rhum: number, date: string }
+     * @param {Object} dayData - { tmax, rhum, wspd, date }
      * @returns {Object|null} - Alert object or null
      */
     static checkDailyRisk(dayData) {
-        // Logic: Critical Heat Rule
+        // --- EXISTING HEAT LOGIC ---
         if (dayData.tmax >= RULES.TEMP_CRITICAL) {
             return {
                 type: "HEATWAVE_CRITICAL",
@@ -25,7 +28,6 @@ class KnowledgeEngine {
             };
         }
 
-        // Logic: Dry Heat Rule (High Temp + Low Humidity)
         if (dayData.tmax >= RULES.TEMP_HIGH && dayData.rhum < RULES.HUMIDITY_DANGER) {
             return {
                 type: "DRY_HEAT_RISK",
@@ -35,24 +37,43 @@ class KnowledgeEngine {
             };
         }
 
+        // --- NEW: WIND & STORM LOGIC ---
+
+        // 1. Severe Storm Rule (Highest Priority)
+        // Checks for dangerous wind speeds usually associated with damage
+        if (dayData.wspd >= RULES.WIND_STORM) {
+            return {
+                type: "SEVERE_STORM_EVENT",
+                level: "CRITICAL", // This triggers the RED badge in your table
+                message: `Storm force winds detected: ${dayData.wspd} km/h. Structure damage possible.`,
+                date: dayData.date
+            };
+        }
+
+        // 2. Gale/Strong Wind Rule
+        // Checks for high winds that require agricultural advisory
+        if (dayData.wspd >= RULES.WIND_GALE) {
+            return {
+                type: "STRONG_WIND_ADVISORY",
+                level: "HIGH", // This triggers the ORANGE badge in your table
+                message: `Gale force winds: ${dayData.wspd} km/h. Crop protection advised.`,
+                date: dayData.date
+            };
+        }
+
         return null; // No alert
     }
 
     /**
-     * Rule 2: Analyze history for persistent patterns (3-day heatwave)
-     * @param {Array} historyBuffer - Array of last 3 days of data
-     * @returns {Object|null}
+     * Rule 2: Analyze history for persistent patterns
      */
     static checkPersistentRisk(historyBuffer) {
         if (historyBuffer.length < 3) return null;
-
-        // Extract last 3 days
         const last3Days = historyBuffer.slice(-3);
 
-        // Check if ALL 3 days have TMAX > 40 (Slightly lower threshold for duration)
-        const isPersistent = last3Days.every(day => day.tmax > 40.0);
-
-        if (isPersistent) {
+        // Heat Persistence
+        const isPersistentHeat = last3Days.every(day => day.tmax > 40.0);
+        if (isPersistentHeat) {
             return {
                 type: "PERSISTENT_HEATWAVE",
                 level: "EXTREME",
@@ -61,36 +82,43 @@ class KnowledgeEngine {
             };
         }
 
+        // NEW: Storm Persistence (e.g., Multi-day storm front)
+        // If wind stays high (> 50km/h) for 3 days straight
+        const isPersistentStorm = last3Days.every(day => day.wspd > 50.0);
+        if (isPersistentStorm) {
+             return {
+                type: "LONG_DURATION_STORM",
+                level: "HIGH",
+                message: "Persistent Storm Front: High winds > 50km/h sustaining for 72h.",
+                date: last3Days[last3Days.length - 1].date
+            };
+        }
+
         return null;
     }
 
-    /**
-     * Main Processing Function
-     * Takes the full prediction list and adds "alert" fields to relevant days
-     */
     static processForecasts(forecastList) {
         const processedData = [];
         const historyBuffer = [];
 
         forecastList.forEach(day => {
-            // Create a copy of the data to avoid mutating original
             const enrichedDay = { ...day, alert: null };
 
-            // 1. Check Daily Rules
+            // 1. Check Daily Rules (Heat + Wind)
             const dailyAlert = this.checkDailyRisk(day);
             if (dailyAlert) {
                 enrichedDay.alert = dailyAlert;
             }
 
-            // 2. Update Buffer & Check Persistent Rules
+            // 2. Check Persistent Rules
             historyBuffer.push(day);
-            if (historyBuffer.length > 3) historyBuffer.shift(); // Keep size 3
+            if (historyBuffer.length > 3) historyBuffer.shift(); 
 
             const persistentAlert = this.checkPersistentRisk(historyBuffer);
             
-            // If persistent alert exists, it overrides or adds to daily alert
+            // Persistent alerts usually override daily ones because they are more severe
             if (persistentAlert) {
-                enrichedDay.alert = persistentAlert; // Prioritize persistent alert
+                enrichedDay.alert = persistentAlert; 
             }
 
             processedData.push(enrichedDay);
